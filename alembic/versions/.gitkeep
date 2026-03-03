@@ -1,0 +1,2 @@
+# 이 디렉토리에 Alembic 마이그레이션 파일들이 자동 생성됩니다.
+# alembic revision --autogenerate -m "설명" 명령으로 생성됩니다.

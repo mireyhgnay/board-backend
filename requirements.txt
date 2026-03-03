@@ -1,0 +1,71 @@
+# ════════════════════════════════════════════════════════════════
+# 📌 requirements.txt - 프로젝트 의존성 패키지 목록
+#
+# 【 설치 방법 】
+#     1. 가상환경 생성 및 활성화:
+#         python -m venv venv
+#         source venv/bin/activate  (Mac/Linux)
+#         venv\Scripts\activate     (Windows)
+#
+#     2. 패키지 설치:
+#         pip install -r requirements.txt
+#
+# 【 패키지 추가 시 】
+#     pip install 패키지명
+#     pip freeze > requirements.txt  (현재 설치된 패키지 목록 저장)
+#
+# 【 가상환경이란? 】
+#     프로젝트마다 독립적인 Python 환경을 만드는 도구입니다.
+#     Node.js의 node_modules와 비슷한 개념입니다.
+#     프로젝트A는 패키지 v1.0, 프로젝트B는 패키지 v2.0을 각각 사용 가능합니다.
+# ════════════════════════════════════════════════════════════════
+
+# ──────────────────────────────────────
+# 🌐 웹 프레임워크
+# ──────────────────────────────────────
+fastapi==0.115.6         # Python 웹 프레임워크 (Node.js의 Express.js와 비슷)
+uvicorn[standard]==0.34.0  # ASGI 서버 (앱을 실행시키는 서버, Node.js의 node 명령과 비슷)
+                           # [standard]: WebSocket, HTTP/2 등 추가 기능 포함
+
+# ──────────────────────────────────────
+# 🗄️ 데이터베이스 관련
+# ──────────────────────────────────────
+sqlalchemy==2.0.37       # Python ORM (Object-Relational Mapping) 라이브러리
+                         # DB 테이블을 Python 클래스로 다룰 수 있게 해줌
+alembic==1.14.1          # SQLAlchemy DB 마이그레이션 도구
+                         # DB 스키마 변경 이력 관리
+psycopg2-binary==2.9.11  # Python에서 PostgreSQL을 사용하기 위한 드라이버
+                         # Supabase는 PostgreSQL 기반이므로 이 드라이버를 사용합니다
+                         # -binary: 별도 컴파일 없이 바로 설치 가능한 버전 (개발용)
+                         # 2.9.11: Python 3.13 지원 버전
+                         # ⚠️ Railway/Render 같은 클라우드 배포 시 psycopg2(non-binary)로 교체 권장
+
+# ──────────────────────────────────────
+# ✅ 데이터 검증
+# ──────────────────────────────────────
+pydantic==2.10.4         # 데이터 유효성 검사 라이브러리
+                         # FastAPI의 요청/응답 데이터 검증에 사용
+pydantic-settings==2.7.0 # pydantic의 환경 변수 관리 확장
+                         # .env 파일을 읽어 Settings 클래스로 변환
+
+# ──────────────────────────────────────
+# 🔐 보안 / 인증
+# ──────────────────────────────────────
+python-jose[cryptography]==3.3.0  # JWT 토큰 생성/검증 라이브러리
+                                   # JSON Web Token 처리
+passlib[bcrypt]==1.7.4   # 비밀번호 해싱 라이브러리
+                         # bcrypt 알고리즘으로 안전한 비밀번호 저장
+bcrypt==4.2.1            # passlib의 bcrypt 백엔드
+
+# ──────────────────────────────────────
+# 🛠️ 유틸리티
+# ──────────────────────────────────────
+python-multipart==0.0.20 # 파일 업로드, 폼 데이터 처리에 필요
+python-dotenv==1.0.1     # .env 파일 로딩 지원
+
+# ──────────────────────────────────────
+# 🧪 테스트 (개발 환경)
+# ──────────────────────────────────────
+pytest==8.3.4            # Python 테스트 프레임워크
+pytest-asyncio==0.25.3   # 비동기 테스트 지원
+httpx==0.28.1            # FastAPI 테스트용 HTTP 클라이언트
