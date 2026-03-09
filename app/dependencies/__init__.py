@@ -2,7 +2,7 @@
 📌 dependencies/__init__.py - 의존성 주입 패키지
 
 【 FastAPI 의존성 주입(Dependency Injection)이란? 】
-    특정 기능(DB 세션, 현재 로그인 유저 등)을 API 함수에
+    특정 기능(DB 세션 등)을 API 함수에
     자동으로 주입해주는 FastAPI의 핵심 기능입니다.
 
     Depends()를 사용해서 API 함수가 호출될 때 자동으로 실행됩니다.
@@ -15,8 +15,7 @@
 【 사용 예시 】
     @router.get("/posts")
     def get_posts(
-        db: Session = Depends(get_db),              # DB 세션 자동 주입
-        current_user: User = Depends(get_current_user)  # 현재 유저 자동 주입
+        db: Session = Depends(get_db),  # DB 세션 자동 주입
     ):
         ...
 """

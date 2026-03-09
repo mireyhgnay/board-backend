@@ -19,8 +19,6 @@
 【 현재 등록된 API 그룹 】
     - /api/v1/health  : 서버 상태 확인 (헬스체크)
     (추후 추가 예정)
-    - /api/v1/auth    : 인증 (로그인, 회원가입, 토큰 갱신)
-    - /api/v1/users   : 유저 관리
     - /api/v1/posts   : 게시글
     - /api/v1/comments: 댓글
 """
@@ -61,20 +59,6 @@ def health_check():
 # ────────────────────────────────────────────────────────────────
 
 # 아래는 라우터 추가 예시입니다. 파일 생성 후 주석을 해제하세요.
-
-# from app.api.v1 import auth
-# api_router.include_router(
-#     auth.router,
-#     prefix="/auth",       # URL 접두사: /api/v1/auth/...
-#     tags=["Auth"],        # Swagger UI 그룹명
-# )
-
-# from app.api.v1 import users
-# api_router.include_router(
-#     users.router,
-#     prefix="/users",
-#     tags=["Users"],
-# )
 
 # from app.api.v1 import posts
 # api_router.include_router(

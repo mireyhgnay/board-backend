@@ -74,10 +74,8 @@ app = FastAPI(
     FastAPI + SQLAlchemy + Supabase(PostgreSQL)로 구성된 게시판 백엔드 서버입니다.
 
     ### 주요 기능
-    - 🔐 JWT 기반 사용자 인증
     - 📝 게시글 CRUD
     - 💬 댓글 CRUD
-    - 👤 사용자 관리
     """,
 
     # Swagger UI 접속 경로 설정

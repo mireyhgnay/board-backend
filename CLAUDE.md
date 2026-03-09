@@ -18,7 +18,6 @@
 | DB | Supabase (PostgreSQL 기반 클라우드 DB) |
 | DB 드라이버 | psycopg2-binary |
 | 마이그레이션 | Alembic |
-| 인증 | JWT (python-jose) |
 
 ---
 
@@ -31,8 +30,7 @@ board-backend/
 │   │
 │   ├── core/                    # 앱 핵심 설정 (변경 빈도 낮음)
 │   │   ├── config.py            # 환경 변수 관리 (pydantic-settings)
-│   │   ├── database.py          # DB 엔진, 세션, Base 설정
-│   │   └── security.py          # 비밀번호 해싱, JWT 토큰 유틸리티
+│   │   └── database.py          # DB 엔진, 세션, Base 설정
 │   │
 │   ├── models/                  # SQLAlchemy ORM 모델 (DB 테이블 정의)
 │   │   ├── __init__.py          # ⚠️ 새 모델 추가 시 반드시 여기에 import
@@ -45,23 +43,17 @@ board-backend/
 │   ├── api/                     # API 엔드포인트 (라우터)
 │   │   └── v1/
 │   │       ├── router.py        # v1 라우터 통합 (새 라우터는 여기에 등록)
-│   │       ├── auth.py          # (추후) 로그인/회원가입 API
-│   │       ├── users.py         # (추후) 유저 관리 API
 │   │       ├── posts.py         # (추후) 게시글 API
 │   │       └── comments.py      # (추후) 댓글 API
 │   │
 │   ├── services/                # 비즈니스 로직 (핵심 처리 로직)
-│   │   ├── auth_service.py      # (추후) 인증 로직
-│   │   ├── user_service.py      # (추후) 유저 로직
 │   │   └── post_service.py      # (추후) 게시글 로직
 │   │
 │   ├── repositories/            # 데이터 접근 레이어 (DB CRUD)
-│   │   ├── user_repository.py   # (추후) User CRUD
 │   │   └── post_repository.py   # (추후) Post CRUD
 │   │
 │   └── dependencies/            # FastAPI 의존성 주입
-│       ├── __init__.py
-│       └── auth.py              # JWT 토큰 검증, 현재 유저 반환
+│       └── __init__.py
 │
 ├── alembic/                     # DB 마이그레이션
 │   ├── env.py                   # Alembic 환경 설정 (⚠️ 모델 import 필수)
@@ -69,7 +61,6 @@ board-backend/
 │
 ├── tests/                       # 테스트
 │   ├── conftest.py              # 공통 픽스처 (테스트 DB, 클라이언트)
-│   ├── test_auth.py             # (추후) 인증 테스트
 │   └── test_posts.py            # (추후) 게시글 테스트
 │
 ├── .env                         # 환경 변수 (git 제외 - 직접 생성 필요)
@@ -133,11 +124,10 @@ HTTP 요청
 ### 스키마 네이밍
 
 ```python
-UserBase      # 공통 필드
-UserCreate    # 생성 요청 데이터
-UserUpdate    # 수정 요청 데이터 (Optional 필드)
-UserResponse  # 응답 데이터 (민감 정보 제외)
-UserInDB      # DB 저장 데이터 (해시된 비밀번호 포함)
+PostBase      # 공통 필드
+PostCreate    # 생성 요청 데이터
+PostUpdate    # 수정 요청 데이터 (Optional 필드)
+PostResponse  # 응답 데이터
 ```
 
 ---
@@ -249,7 +239,7 @@ alembic history
 pytest tests/ -v
 
 # 특정 파일 테스트
-pytest tests/test_auth.py -v
+pytest tests/test_posts.py -v
 
 # 커버리지 확인
 pytest tests/ --cov=app

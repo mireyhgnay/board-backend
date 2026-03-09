@@ -61,16 +61,6 @@ class Settings(BaseSettings):
     DATABASE_URL: str = ""  # .env 파일에서 반드시 설정해야 합니다!
 
     # ────────────────────────────────────────────────
-    # 🔐 JWT (인증 토큰) 설정
-    # JWT = JSON Web Token: 로그인 후 발급하는 인증 토큰
-    # 프론트에서 localStorage에 저장하고 API 요청 시 헤더에 담아 보냅니다
-    # ────────────────────────────────────────────────
-    SECRET_KEY: str = "your-secret-key-change-in-production"  # 토큰 서명에 사용 (반드시 복잡하게!)
-    ALGORITHM: str = "HS256"               # JWT 서명 알고리즘
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # 액세스 토큰 만료 시간 (분)
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 7     # 리프레시 토큰 만료 시간 (일)
-
-    # ────────────────────────────────────────────────
     # 🌐 CORS 설정
     # CORS = Cross-Origin Resource Sharing
     #
