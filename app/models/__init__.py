@@ -20,6 +20,6 @@
 from app.models.base import BaseModel, TimestampMixin
 
 # ⚠️ 모델을 추가할 때마다 아래에 import를 추가하세요!
-# from app.models.user import User
-# from app.models.post import Post
+from app.models.post import Post
+
 # from app.models.comment import Comment

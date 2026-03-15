@@ -58,14 +58,15 @@ def health_check():
 # 📦 각 기능별 라우터 등록 (기능을 추가할 때 여기에 등록하세요)
 # ────────────────────────────────────────────────────────────────
 
-# 아래는 라우터 추가 예시입니다. 파일 생성 후 주석을 해제하세요.
+# 게시글 API 라우터 등록
+from app.api.v1 import posts
+api_router.include_router(
+    posts.router,
+    prefix="/posts",
+    tags=["Posts"],
+)
 
-# from app.api.v1 import posts
-# api_router.include_router(
-#     posts.router,
-#     prefix="/posts",
-#     tags=["Posts"],
-# )
+# 아래는 라우터 추가 예시입니다. 파일 생성 후 주석을 해제하세요.
 
 # from app.api.v1 import comments
 # api_router.include_router(
