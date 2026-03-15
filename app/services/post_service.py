@@ -48,3 +48,44 @@ def create_post(db: Session, post_data: PostCreate) -> Post:
         Post: 생성된 게시글 객체
     """
     return post_repository.create_post(db=db, post_data=post_data)
+
+
+def get_posts(db: Session, page: int = 1, size: int = 20) -> dict:
+    """
+    📌 게시글 목록을 조회합니다 (페이지네이션 포함).
+
+    【 왜 Service에서 페이지 계산을 하나요? 】
+        Repository는 skip/limit만 알면 되고,
+        "몇 페이지, 몇 개씩"이라는 개념은 비즈니스 로직입니다.
+        Service에서 page/size를 skip/limit으로 변환해줍니다.
+
+    【 페이지 → skip 변환 공식 】
+        skip = (page - 1) * size
+        예: 1페이지 → skip=0, 2페이지 → skip=10, 3페이지 → skip=20
+
+    Args:
+        db: DB 세션
+        page: 요청 페이지 번호 (1부터 시작)
+        size: 한 페이지에 보여줄 게시글 수
+
+    Returns:
+        dict: 게시글 목록과 페이지네이션 정보
+    """
+    # page를 skip으로 변환 (Repository는 offset/limit 방식을 사용)
+    skip = (page - 1) * size
+
+    # Repository에서 데이터 조회
+    posts = post_repository.get_posts(db=db, skip=skip, limit=size)
+    total = post_repository.count_posts(db=db)
+
+    # 전체 페이지 수 계산 (올림 나눗셈)
+    # 예: 전체 25개, 한 페이지 10개 → (25 + 10 - 1) // 10 = 3페이지
+    total_pages = (total + size - 1) // size if total > 0 else 0
+
+    return {
+        "posts": posts,
+        "total": total,
+        "page": page,
+        "size": size,
+        "total_pages": total_pages,
+    }

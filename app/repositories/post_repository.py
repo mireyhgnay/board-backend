@@ -61,3 +61,53 @@ def create_post(db: Session, post_data: PostCreate) -> Post:
     db.refresh(db_post)
 
     return db_post
+
+
+def get_posts(db: Session, skip: int = 0, limit: int = 10) -> list[Post]:
+    """
+    📌 게시글 목록을 DB에서 조회합니다.
+
+    【 동작 흐름 】
+        1. Post 테이블에서 최신순으로 정렬 (order_by desc)
+        2. offset(skip)과 limit으로 페이지네이션 처리
+        3. .all()로 결과를 리스트로 변환
+
+    【 offset & limit이란? 】
+        SQL의 페이지네이션 방법입니다.
+        - offset(skip): 앞에서 몇 개를 건너뛸지 (예: 2페이지면 10개 건너뜀)
+        - limit: 최대 몇 개를 가져올지 (한 페이지에 보여줄 개수)
+
+        예: 2페이지, 10개씩 → skip=10, limit=10
+            → 11번째~20번째 게시글을 가져옴
+
+    Args:
+        db: DB 세션
+        skip: 건너뛸 개수 (페이지네이션용)
+        limit: 가져올 최대 개수
+
+    Returns:
+        list[Post]: 게시글 목록
+    """
+    return (
+        db.query(Post)
+        .order_by(Post.created_at.desc())  # 최신글이 먼저 오도록 내림차순 정렬
+        .offset(skip)  # skip개만큼 건너뛰기
+        .limit(limit)  # limit개만 가져오기
+        .all()  # 쿼리 실행 후 리스트로 반환
+    )
+
+
+def count_posts(db: Session) -> int:
+    """
+    📌 전체 게시글 수를 조회합니다.
+
+    페이지네이션 응답에서 전체 페이지 수를 계산하기 위해 필요합니다.
+    예: 전체 55개, 한 페이지 10개 → 총 6페이지
+
+    Args:
+        db: DB 세션
+
+    Returns:
+        int: 전체 게시글 수
+    """
+    return db.query(Post).count()

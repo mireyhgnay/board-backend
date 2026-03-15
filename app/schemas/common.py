@@ -86,7 +86,7 @@ class PaginatedResponse(BaseResponse, Generic[DataT]):
     data: list[DataT] = []
     total: int = 0          # 전체 데이터 수
     page: int = 1           # 현재 페이지 번호
-    size: int = 10          # 페이지 당 데이터 수
+    size: int = 20          # 페이지 당 데이터 수 (무한스크롤 기본 단위)
     total_pages: int = 0    # 전체 페이지 수
 
 

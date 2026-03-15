@@ -24,16 +24,97 @@
     → DB 세션 관리를 신경 쓰지 않아도 됩니다!
 """
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.schemas.post import PostCreate, PostResponse
-from app.schemas.common import DataResponse
+from app.schemas.common import DataResponse, PaginatedResponse
 from app.services import post_service
 
 # 이 파일의 라우터 객체: router.py에서 이것을 가져다 등록합니다
 router = APIRouter()
+
+
+@router.get(
+    "",
+    response_model=PaginatedResponse[PostResponse],
+    summary="게시글 목록 조회",
+    description="게시글 목록을 페이지네이션으로 조회합니다.",
+)
+def get_posts(
+    page: int = Query(
+        default=1,
+        ge=1,  # ge = greater than or equal (1 이상)
+        description="페이지 번호 (1부터 시작)",
+    ),
+    size: int = Query(
+        default=20,
+        ge=1,
+        le=100,  # le = less than or equal (최대 100개)
+        description="한 페이지에 보여줄 게시글 수 (기본 20, 최대 100)",
+    ),
+    db: Session = Depends(get_db),
+):
+    """
+    📌 게시글 목록 조회 API
+
+    【 요청 예시 】
+        GET /api/v1/posts?page=1&size=10
+
+    【 Query Parameter란? 】
+        URL의 ? 뒤에 오는 값입니다.
+        /api/v1/posts?page=2&size=5 → page=2, size=5
+        FastAPI의 Query()를 사용하면 자동으로 파싱 & 검증됩니다.
+
+    【 응답 예시 】
+        200 OK
+        {
+            "success": true,
+            "message": "게시글 목록을 조회했습니다.",
+            "data": [
+                {
+                    "id": 2,
+                    "title": "두 번째 게시글",
+                    "content": "내용...",
+                    "created_at": "...",
+                    "updated_at": "..."
+                },
+                {
+                    "id": 1,
+                    "title": "첫 번째 게시글",
+                    "content": "내용...",
+                    "created_at": "...",
+                    "updated_at": "..."
+                }
+            ],
+            "total": 2,
+            "page": 1,
+            "size": 10,
+            "total_pages": 1
+        }
+
+    Args:
+        page: 페이지 번호 (Query Parameter, 기본값 1)
+        size: 페이지 크기 (Query Parameter, 기본값 10)
+        db: DB 세션 (Depends로 자동 주입)
+
+    Returns:
+        PaginatedResponse[PostResponse]: 게시글 목록 + 페이지네이션 정보
+    """
+
+    # Service 레이어에 비즈니스 로직 위임
+    result = post_service.get_posts(db=db, page=page, size=size)
+
+    # PaginatedResponse 형식으로 응답 구성
+    return PaginatedResponse[PostResponse](
+        message="게시글 목록을 조회했습니다.",
+        data=[PostResponse.model_validate(post) for post in result["posts"]],
+        total=result["total"],
+        page=result["page"],
+        size=result["size"],
+        total_pages=result["total_pages"],
+    )
 
 
 @router.post(
