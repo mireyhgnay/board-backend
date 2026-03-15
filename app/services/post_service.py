@@ -23,8 +23,10 @@
 
 from sqlalchemy.orm import Session
 
+from fastapi import HTTPException, status
+
 from app.models.post import Post
-from app.schemas.post import PostCreate
+from app.schemas.post import PostCreate, PostUpdate
 from app.repositories import post_repository
 
 
@@ -48,6 +50,33 @@ def create_post(db: Session, post_data: PostCreate) -> Post:
         Post: 생성된 게시글 객체
     """
     return post_repository.create_post(db=db, post_data=post_data)
+
+
+def get_post(db: Session, post_id: int) -> Post:
+    """
+    📌 게시글 1건을 상세 조회합니다.
+
+    목록에서 게시글을 클릭했을 때 상세 페이지에 보여줄 데이터를 가져옵니다.
+
+    Args:
+        db: DB 세션
+        post_id: 조회할 게시글 ID
+
+    Returns:
+        Post: 게시글 객체
+
+    Raises:
+        HTTPException: 게시글이 존재하지 않을 때 404 에러
+    """
+    db_post = post_repository.get_post_by_id(db=db, post_id=post_id)
+
+    if not db_post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="게시글을 찾을 수 없습니다.",
+        )
+
+    return db_post
 
 
 def get_posts(db: Session, page: int = 1, size: int = 20) -> dict:
@@ -89,3 +118,68 @@ def get_posts(db: Session, page: int = 1, size: int = 20) -> dict:
         "size": size,
         "total_pages": total_pages,
     }
+
+
+def update_post(db: Session, post_id: int, post_data: PostUpdate) -> Post:
+    """
+    📌 게시글을 수정합니다.
+
+    【 왜 Service에서 존재 여부를 확인하나요? 】
+        "없는 게시글은 수정할 수 없다"는 것은 비즈니스 규칙입니다.
+        Repository는 DB 작업만 담당하고, 이런 규칙 검증은 Service의 역할입니다.
+
+    【 HTTPException이란? 】
+        FastAPI에서 에러 응답을 보내는 방법입니다.
+        raise하면 FastAPI가 자동으로 해당 상태 코드와 메시지를 JSON으로 반환합니다.
+        예: 404 → {"detail": "게시글을 찾을 수 없습니다."}
+
+    Args:
+        db: DB 세션
+        post_id: 수정할 게시글 ID
+        post_data: 수정할 데이터 (title, content 중 변경할 것만)
+
+    Returns:
+        Post: 수정된 게시글 객체
+
+    Raises:
+        HTTPException: 게시글이 존재하지 않을 때 404 에러
+    """
+    # 게시글 존재 여부 확인
+    db_post = post_repository.get_post_by_id(db=db, post_id=post_id)
+
+    if not db_post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="게시글을 찾을 수 없습니다.",
+        )
+
+    # Repository에 수정 위임
+    return post_repository.update_post(db=db, db_post=db_post, post_data=post_data)
+
+
+def delete_post(db: Session, post_id: int) -> None:
+    """
+    📌 게시글을 삭제합니다.
+
+    【 동작 흐름 】
+        1. 게시글 존재 여부 확인 (없으면 404)
+        2. Repository에 삭제 위임
+
+    Args:
+        db: DB 세션
+        post_id: 삭제할 게시글 ID
+
+    Raises:
+        HTTPException: 게시글이 존재하지 않을 때 404 에러
+    """
+    # 게시글 존재 여부 확인
+    db_post = post_repository.get_post_by_id(db=db, post_id=post_id)
+
+    if not db_post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="게시글을 찾을 수 없습니다.",
+        )
+
+    # Repository에 삭제 위임
+    post_repository.delete_post(db=db, db_post=db_post)

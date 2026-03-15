@@ -28,8 +28,8 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.schemas.post import PostCreate, PostResponse
-from app.schemas.common import DataResponse, PaginatedResponse
+from app.schemas.post import PostCreate, PostUpdate, PostResponse
+from app.schemas.common import BaseResponse, DataResponse, PaginatedResponse
 from app.services import post_service
 
 # 이 파일의 라우터 객체: router.py에서 이것을 가져다 등록합니다
@@ -117,6 +117,57 @@ def get_posts(
     )
 
 
+@router.get(
+    "/{post_id}",
+    response_model=DataResponse[PostResponse],
+    summary="게시글 상세 조회",
+    description="게시글 1건의 상세 정보를 조회합니다.",
+)
+def get_post(
+    post_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    📌 게시글 상세 조회 API
+
+    【 언제 사용하나요? 】
+        게시글 목록에서 특정 게시글을 클릭했을 때,
+        해당 게시글의 전체 내용을 가져오기 위해 호출합니다.
+
+    【 요청 예시 】
+        GET /api/v1/posts/1
+
+    【 응답 예시 】
+        200 OK
+        {
+            "success": true,
+            "message": "게시글을 조회했습니다.",
+            "data": {
+                "id": 1,
+                "title": "첫 번째 게시글",
+                "content": "안녕하세요! 첫 게시글입니다.",
+                "created_at": "2026-03-09T12:00:00+00:00",
+                "updated_at": "2026-03-09T12:00:00+00:00"
+            }
+        }
+
+    Args:
+        post_id: 조회할 게시글 ID (Path Parameter)
+        db: DB 세션 (Depends로 자동 주입)
+
+    Returns:
+        DataResponse[PostResponse]: 게시글 상세 정보를 포함한 응답
+    """
+
+    # Service 레이어에 비즈니스 로직 위임
+    post = post_service.get_post(db=db, post_id=post_id)
+
+    return DataResponse[PostResponse](
+        message="게시글을 조회했습니다.",
+        data=PostResponse.model_validate(post),
+    )
+
+
 @router.post(
     "",
     response_model=DataResponse[PostResponse],
@@ -174,4 +225,108 @@ def create_post(
     return DataResponse[PostResponse](
         message="게시글이 생성되었습니다.",
         data=PostResponse.model_validate(created_post),
+    )
+
+
+@router.put(
+    "/{post_id}",
+    response_model=DataResponse[PostResponse],
+    summary="게시글 수정",
+    description="게시글의 제목, 내용을 수정합니다. 변경할 필드만 보내면 됩니다.",
+)
+def update_post(
+    post_id: int,
+    post_data: PostUpdate,
+    db: Session = Depends(get_db),
+):
+    """
+    📌 게시글 수정 API
+
+    【 요청 예시 】
+        PUT /api/v1/posts/1
+        {
+            "title": "수정된 제목"
+        }
+        → content는 보내지 않았으므로 기존 값 유지
+
+    【 Path Parameter란? 】
+        URL 경로에 포함되는 값입니다.
+        /api/v1/posts/1 → post_id=1
+        FastAPI가 자동으로 int 타입으로 변환 & 검증합니다.
+
+    【 응답 예시 】
+        200 OK
+        {
+            "success": true,
+            "message": "게시글이 수정되었습니다.",
+            "data": {
+                "id": 1,
+                "title": "수정된 제목",
+                "content": "기존 내용 그대로",
+                "created_at": "...",
+                "updated_at": "2026-03-15T12:00:00+00:00"
+            }
+        }
+
+    Args:
+        post_id: 수정할 게시글 ID (Path Parameter)
+        post_data: 수정할 데이터 (title, content 중 변경할 것만)
+        db: DB 세션 (Depends로 자동 주입)
+
+    Returns:
+        DataResponse[PostResponse]: 수정된 게시글 정보를 포함한 응답
+    """
+
+    # Service 레이어에 비즈니스 로직 위임
+    updated_post = post_service.update_post(
+        db=db, post_id=post_id, post_data=post_data
+    )
+
+    return DataResponse[PostResponse](
+        message="게시글이 수정되었습니다.",
+        data=PostResponse.model_validate(updated_post),
+    )
+
+
+@router.delete(
+    "/{post_id}",
+    response_model=BaseResponse,
+    summary="게시글 삭제",
+    description="게시글을 삭제합니다. 삭제된 게시글은 복구할 수 없습니다.",
+)
+def delete_post(
+    post_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    📌 게시글 삭제 API
+
+    【 요청 예시 】
+        DELETE /api/v1/posts/1
+
+    【 응답 예시 】
+        200 OK
+        {
+            "success": true,
+            "message": "게시글이 삭제되었습니다."
+        }
+
+    【 왜 삭제 후 데이터를 반환하지 않나요? 】
+        삭제된 데이터는 더 이상 존재하지 않으므로
+        성공 여부만 알려주면 충분합니다.
+        BaseResponse(success, message)만 반환합니다.
+
+    Args:
+        post_id: 삭제할 게시글 ID (Path Parameter)
+        db: DB 세션 (Depends로 자동 주입)
+
+    Returns:
+        BaseResponse: 삭제 성공 메시지
+    """
+
+    # Service 레이어에 비즈니스 로직 위임
+    post_service.delete_post(db=db, post_id=post_id)
+
+    return BaseResponse(
+        message="게시글이 삭제되었습니다.",
     )

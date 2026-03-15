@@ -18,6 +18,7 @@
 """
 
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -57,6 +58,38 @@ class PostCreate(PostBase):
     title과 content만 있으면 됩니다. (id, created_at 등은 서버에서 자동 생성)
     """
     pass  # PostBase의 필드를 그대로 사용
+
+
+class PostUpdate(BaseModel):
+    """
+    📌 게시글 수정 요청 스키마
+
+    클라이언트가 PUT /api/v1/posts/{post_id} 로 보내는 데이터 형식입니다.
+
+    【 왜 Optional을 사용하나요? 】
+        수정 시에는 제목만 바꾸거나, 내용만 바꿀 수도 있습니다.
+        Optional로 선언하면 보내지 않은 필드는 None이 되어
+        "변경하지 않겠다"는 의미로 처리할 수 있습니다.
+
+    【 PostBase를 상속하지 않는 이유 】
+        PostBase는 title, content가 모두 필수(...)입니다.
+        수정 시에는 둘 다 선택적이어야 하므로 별도로 정의합니다.
+    """
+
+    title: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=200,
+        description="수정할 게시글 제목 (보내지 않으면 변경 안 함)",
+        examples=["수정된 제목"]
+    )
+
+    content: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        description="수정할 게시글 내용 (보내지 않으면 변경 안 함)",
+        examples=["수정된 내용입니다."]
+    )
 
 
 class PostResponse(PostBase):

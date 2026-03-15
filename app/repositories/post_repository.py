@@ -23,8 +23,10 @@
 
 from sqlalchemy.orm import Session
 
+from typing import Optional
+
 from app.models.post import Post
-from app.schemas.post import PostCreate
+from app.schemas.post import PostCreate, PostUpdate
 
 
 def create_post(db: Session, post_data: PostCreate) -> Post:
@@ -111,3 +113,90 @@ def count_posts(db: Session) -> int:
         int: 전체 게시글 수
     """
     return db.query(Post).count()
+
+
+def get_post_by_id(db: Session, post_id: int) -> Optional[Post]:
+    """
+    📌 ID로 게시글 1건을 조회합니다.
+
+    【 .filter() vs .get() 】
+        - db.query(Post).filter(Post.id == 1): WHERE 조건으로 검색
+        - db.get(Post, 1): 기본키(PK)로 직접 조회 (더 빠르지만 유연성 낮음)
+        여기서는 filter를 사용해 다른 조건 추가가 쉽도록 했습니다.
+
+    【 .first()란? 】
+        결과가 여러 개일 수 있지만 첫 번째 것만 반환합니다.
+        결과가 없으면 None을 반환합니다 (에러가 나지 않음).
+
+    Args:
+        db: DB 세션
+        post_id: 조회할 게시글 ID
+
+    Returns:
+        Optional[Post]: 게시글 객체 (없으면 None)
+    """
+    return db.query(Post).filter(Post.id == post_id).first()
+
+
+def update_post(db: Session, db_post: Post, post_data: PostUpdate) -> Post:
+    """
+    📌 기존 게시글을 수정합니다.
+
+    【 동작 흐름 】
+        1. model_dump(exclude_unset=True)로 클라이언트가 실제로 보낸 필드만 추출
+        2. setattr()로 해당 필드만 업데이트
+        3. commit() → DB에 UPDATE 쿼리 실행
+        4. refresh() → 변경된 updated_at 등을 객체에 반영
+
+    【 exclude_unset=True가 핵심! 】
+        클라이언트가 {"title": "새 제목"} 만 보내면:
+        - exclude_unset=True  → {"title": "새 제목"} (content는 포함 안 됨 → 기존 값 유지)
+        - exclude_unset=False → {"title": "새 제목", "content": None} (content가 None으로 덮어씀!)
+
+    Args:
+        db: DB 세션
+        db_post: 수정할 게시글 모델 객체 (이미 DB에서 조회된 상태)
+        post_data: 수정할 데이터 (변경할 필드만 포함)
+
+    Returns:
+        Post: 수정된 게시글 객체
+    """
+    # 클라이언트가 실제로 보낸 필드만 딕셔너리로 추출
+    update_data = post_data.model_dump(exclude_unset=True)
+
+    # setattr(): 객체의 속성을 동적으로 변경하는 Python 내장 함수
+    # 예: setattr(db_post, "title", "새 제목") == db_post.title = "새 제목"
+    for field, value in update_data.items():
+        setattr(db_post, field, value)
+
+    # 변경사항을 DB에 반영
+    db.commit()
+
+    # DB에서 최신 데이터를 다시 읽어옴 (updated_at이 갱신됨)
+    db.refresh(db_post)
+
+    return db_post
+
+
+def delete_post(db: Session, db_post: Post) -> None:
+    """
+    📌 게시글을 DB에서 삭제합니다.
+
+    【 동작 흐름 】
+        1. db.delete() → 세션에서 해당 객체를 삭제 대상으로 표시
+        2. db.commit() → 실제 DB에 DELETE 쿼리 실행
+
+    【 Hard Delete vs Soft Delete 】
+        - Hard Delete: DB에서 완전히 삭제 (현재 방식)
+        - Soft Delete: is_deleted 같은 컬럼을 True로 바꿔서 숨김 처리
+        실서비스에서는 Soft Delete를 많이 쓰지만, 학습 목적으로 Hard Delete를 사용합니다.
+
+    Args:
+        db: DB 세션
+        db_post: 삭제할 게시글 모델 객체 (이미 DB에서 조회된 상태)
+    """
+    # 세션에서 삭제 대상으로 표시
+    db.delete(db_post)
+
+    # 실제 DB에 DELETE 쿼리 실행
+    db.commit()
