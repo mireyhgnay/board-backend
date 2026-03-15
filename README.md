@@ -14,6 +14,7 @@
 | 데이터베이스 | Supabase (PostgreSQL) | - |
 | DB 드라이버 | psycopg2-binary | 2.9.11 |
 | 데이터 검증 | Pydantic | 2.10.4 |
+| 배포 플랫폼 | Railway (Nixpacks) | - |
 
 ## 폴더 구조
 
@@ -35,6 +36,8 @@ board-backend/
 ├── tests/                       # 테스트
 ├── .env.example                 # 환경 변수 예시
 ├── alembic.ini                  # Alembic 설정
+├── railway.json                 # Railway 배포 설정 (Nixpacks 빌더)
+├── Procfile                     # Railway 프로세스 정의
 └── requirements.txt             # 패키지 목록
 ```
 
