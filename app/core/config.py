@@ -77,8 +77,8 @@ class Settings(BaseSettings):
         "http://localhost:5173",            # Vite 기본 포트 (로컬 개발)
         "http://127.0.0.1:3000",
         "http://127.0.0.1:5173",
-        # ⚠️ Vercel 배포 URL을 여기에 추가하세요!
-        # "https://your-project.vercel.app",
+        # Vercel 배포 URL
+        "https://board-mu-six.vercel.app",
     ]
 
     class Config:
